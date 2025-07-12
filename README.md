@@ -1,4 +1,6 @@
-```
+``<img width="1918" height="1086" alt="Screenshot 2025-07-12 at 15 12 27" src="https://github.com/user-attachments/assets/54ce4a56-b515-4696-805c-246768b8d11a" />
+`
+
 Wave Presenter
 A Quick Start Guide
 
