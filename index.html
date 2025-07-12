@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Presenter</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' data: blob: https://cdnjs.cloudflare.com https://*.google.com;
+        script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' data: blob:;
+    ">
+    <style>
+        :root {
+            /* COLOURS - Base Palette */
+            --white-100: #dddcdc; /* Light grey/off-white */
+            --white-200: #ffffff; /* Pure white */
+            --black-100: #1a1a1a; /* Main dark mode background */
+            --black-200: #000000; /* Pure black */
+            --grey-100: #9c9c9c; /* Lighter grey */
+            --grey-200: #4f4e4e; /* Medium grey */
+            --grey-300: #666666; /* Specific grey for light mode timeline/file history H3 */
+            --grey-400: #333333; /* Darker grey, e.g., for light mode headings, handles */
+            --grey-500: #ddd; /* Light default border */
+            --grey-600: #f0f0f0; /* File button light mode background */
+            --grey-700: #e0e0e0; /* File button light mode hover background */
+            --grey-800: #e3f2fd; /* File button config light mode background */
+            --grey-900: #777; /* Modal input border in dark mode */
+            --grey-950: #555; /* Modal input background in dark mode */
+
+            /* Accent Colors (for info, success, warning - red is no longer here) */
+            --accent-info: #17a2b8;
+            --accent-info-dark: #138496;
+            --accent-success: #28a745;
+            --accent-success-dark: #218838;
+            --accent-warning: #ffc107;
+            --accent-warning-dark: #e6b100;
+            --accent-red: #dc3545; /* Added for file remove button */
+
+
+            /* ANIMATIONS */
+            --ani-button: color 0.15s ease-in-out, border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+
+
+            /* --- ASSIGNMENTS --- */
+
+            /* General UI */
+            --body-background-light: var(--white-200);
+            --body-text-light: var(--grey-400);
+            --body-background-dark: var(--black-100);
+            --body-text-dark: var(--grey-300);
+
+            /* Headings & Labels */
+            --heading-color-light: var(--grey-400);
+            --heading-color-dark: var(--white-100);
+            --sections-label-color-light: var(--body-text-light);
+            --sections-label-border-light: var(--body-text-light);
+            --sections-label-color-dark: var(--body-text-dark);
+            --sections-label-border-dark: var(--body-text-dark);
+            --timeline-color-light: var(--grey-300);
+            --timeline-color-dark: var(--body-text-dark);
+            --section-line-color-general: var(--grey-100);
+
+            /* Theme Toggle Button */
+            --theme-toggle-border-light: var(--body-text-light);
+            --theme-toggle-color-light: var(--body-text-light);
+            --theme-toggle-border-dark: var(--white-200);
+            --theme-toggle-color-dark: var(--white-200);
+
+            /* Sections Bar */
+            --sections-bar-background-light: var(--white-200);
+            --sections-bar-background-dark: var(--grey-200);
+
+            /* Handles */
+            --handle-background-light: var(--grey-300);
+            --handle-border-light: var(--white-200);
+            --handle-hover-background-light: var(--grey-400);
+
+            /* Play Control Buttons */
+            --play-btn-border-light: var(--grey-300);
+            --play-btn-color-light: var(--grey-300);
+            --play-btn-border-dark: var(--grey-100);
+            --play-btn-color-dark: var(--grey-100);
+
+            --play-btn-hover-border-light: var(--black-200);
+            --play-btn-hover-color-light: var(--black-200);
+            --play-btn-hover-border-dark: var(--white-200);
+            --play-btn-hover-color-dark: var(--white-200);
+
+            /* Dimmed button for focus mode */
+            --button-dimmed-opacity: 0.3;
+
+
+            /* --- UNIFIED BUTTON ASSIGNMENTS (All standard buttons use these) --- */
+
+            /* Light Mode Buttons */
+            --button-background-light: transparent;
+            --button-border-light: var(--grey-200);
+            --button-color-light: var(--grey-200);
+            --button-hover-background-light: transparent;
+            --button-hover-border-light: var(--black-200);
+            --button-hover-color-light: var(--black-200);
+
+            /* Dark Mode Buttons (Replicating the Load Button's dark mode style) */
+            --button-background-dark: transparent;
+            --button-border-dark: var(--grey-300);
+            --button-color-dark: var(--grey-300);
+            --button-hover-background-dark: transparent;
+            --button-hover-border-dark: var(--white-100);
+            --button-hover-color-dark: var(--white-100);
+
+            /* File Buttons (Recent Projects) - these now primarily inherit from unified buttons */
+            --file-btn-default-bg-light: var(--grey-600);
+            --file-btn-default-border-light: var(--grey-500);
+            --file-btn-default-hover-bg-light: var(--grey-700);
+            --file-btn-config-bg-light: var(--grey-800);
+
+
+            /* Modals */
+            --modal-background-light: var(--white-200);
+            --modal-text-light: var(--body-text-light);
+            --modal-input-border-light: var(--grey-500);
+            --modal-input-background-light: var(--white-200);
+            --modal-input-color-light: var(--body-text-light);
+
+            --modal-background-dark: var(--grey-200);
+            --modal-text-dark: var(--body-text-dark);
+            --modal-input-background-dark: var(--grey-950);
+            --modal-input-border-dark: var(--grey-900);
+            --modal-input-color-dark: var(--white-200);
+
+            /* Footer */
+            --footer-color-light: var(--grey-300);
+            --footer-color-dark: var(--grey-100);
+
+            /* Toast Notifications */
+            --toast-background-default: var(--grey-400);
+            --toast-color-default: var(--white-200);
+
+            --toast-warning-color-light: #343a40;
+            --toast-success-color-light: var(--white-200);
+            --toast-info-color-light: var(--white-200);
+
+            --toast-warning-color-dark: #212529;
+            --toast-success-color-dark: var(--toast-success-color-dark);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: var(--body-background-light);
+            color: var(--body-text-light);
+        }
+
+        body.dark-mode {
+            background-color: var(--body-background-dark);
+            color: var(--body-text-dark);
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--heading-color-light);
+            margin-bottom: 30px;
+            font-weight: normal;
+            position: relative;
+        }
+
+        .dark-mode h1 {
+            color: var(--heading-color-dark);
+        }
+
+        /* Span inside H1 for the title text */
+        h1 .title-text {
+            transition: opacity 0.3s ease-in-out; /* For fading the title text */
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: 1px solid var(--theme-toggle-border-light);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--theme-toggle-color-light);
+            transition: var(--ani-button);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--button-hover-border-light);
+            color: var(--button-hover-color-light);
+        }
+
+        .dark-mode .theme-toggle {
+            border-color: var(--theme-toggle-border-dark);
+            color: var(--theme-toggle-color-dark);
+        }
+        .dark-mode .theme-toggle:hover {
+            border-color: var(--button-hover-border-dark);
+            color: var(--button-hover-color-dark);
+        }
+
+        /* Styles for dimmed theme toggle in focus mode */
+        .theme-toggle.dimmed {
+            opacity: var(--button-dimmed-opacity);
+            /* Keep pointer-events as auto here, so it remains clickable */
+        }
+        /* Reset hover effects when dimmed to prevent unwanted visual changes */
+        .theme-toggle.dimmed:hover {
+            border-color: var(--theme-toggle-border-light);
+            color: var(--theme-toggle-color-light);
+        }
+        .dark-mode .theme-toggle.dimmed:hover {
+            border-color: var(--theme-toggle-border-dark);
+            color: var(--theme-toggle-color-dark);
+        }
+
+
+        .main-area {
+            position: relative;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .dots-container {
+            position: relative;
+            height: 40px;
+            margin-bottom: 20px;
+        }
+
+        .section-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            top: -10px;
+            transform: translateX(-5px);
+        }
+
+        #waveform-container {
+            width: 100%;
+            height: 250px;
+            background: transparent;
+            margin-bottom: 20px;
+            position: relative;
+            min-height: 0 !important;
+        }
+
+        #waveform-container wave,
+        #waveform-container canvas {
+            min-height: 0 !important;
+            height: 100% !important;
+        }
+
+        .section-line {
+            position: absolute;
+            width: 1px;
+            background: var(--section-line-color-general);
+            top: 0;
+            height: 250px;
+            z-index: 10;
+        }
+
+        .section-overlay {
+            position: absolute;
+            top: 0;
+            height: 100%; /* Or the height of your waveform */
+            opacity: 0.2; /* 50% opacity */
+            pointer-events: none; /* Allows clicks to pass through to the waveform below */
+            z-index: 5; /* Ensure it's above the waveform but below markers/cursor */
+            transition: opacity 0.3s ease-in-out; /* Add transition for fade */
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--timeline-color-light);
+        }
+
+        .dark-mode .timeline {
+            color: var(--timeline-color-dark);
+        }
+
+        .sections-label {
+            font-size: 16px;
+            color: var(--sections-label-color-light);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--sections-label-border-light);
+            padding-bottom: 5px;
+        }
+
+        .dark-mode .sections-label {
+            color: var(--sections-label-color-dark);
+            border-bottom-color: var(--sections-label-border-dark);
+        }
+
+        #sections-bar {
+            width: 100%;
+            height: 80px;
+            background: var(--sections-bar-background-light);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .dark-mode #sections-bar {
+            background: var(--sections-bar-background-dark);
+        }
+
+        .section-block {
+            position: absolute;
+            height: 60px;
+            top: 10px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--white-200); /* Text inside section block is always white for contrast */
+            font-size: 12px;
+            cursor: pointer;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .section-description {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--handle-background-light);
+            border: 2px solid var(--handle-border-light);
+            border-radius: 50%;
+            cursor: ew-resize;
+            top: calc(80px + 10px);
+            transform: translateX(-50%);
+            z-index: 20;
+            transition: var(--ani-button);
+        }
+
+        .handle:hover {
+            background: var(--handle-hover-background-light);
+        }
+
+
+        .play-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--play-btn-border-light);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--play-btn-color-light);
+            font-family: 'Material Icons';
+            background: transparent;
+            transition: var(--ani-button);
+        }
+
+        .play-btn:hover {
+            border-color: var(--play-btn-hover-border-light);
+            color: var(--play-btn-hover-color-light);
+        }
+
+        .dark-mode .play-btn:hover {
+            border-color: var(--play-btn-hover-border-dark);
+            color: var(--play-btn-hover-color-dark);
+        }
+
+        .dark-mode .play-btn {
+            border-color: var(--play-btn-border-dark);
+            color: var(--play-btn-color-dark);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        /* Style for the focus mode toggle button */
+        .focus-mode-toggle {
+            /* This button also uses .btn styles so inherit from it */
+            font-size: 20px; /* Adjust size if needed for the icon */
+            width: 40px; /* Adjust size to fit in line with other buttons */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0; /* Remove padding from .btn if it interferes with icon centering */
+        }
+
+
+        /* --- UNIFIED .btn STYLES --- */
+        .btn {
+            padding: 8px 16px;
+            background: var(--button-background-light);
+            border: 1px solid var(--button-border-light);
+            border-radius: 4px;
+            color: var(--button-color-light);
+            cursor: pointer;
+            transition: var(--ani-button);
+        }
+
+        .btn:hover {
+            border-color: var(--button-hover-border-light);
+            color: var(--button-hover-color-light);
+            background: var(--button-hover-background-light);
+        }
+
+        .dark-mode .btn {
+            background: var(--button-background-dark);
+            border-color: var(--button-border-dark);
+            color: var(--button-color-dark);
+        }
+        .dark-mode .btn:hover {
+            background: var(--button-hover-background-dark);
+            border-color: var(--button-hover-border-dark);
+            color: var(--button-hover-color-dark);
+        }
+
+
+
+        /* --- File Input & History --- */
+        .file-input {
+            margin-bottom: 20px;
+        }
+
+        .file-history {
+            margin-top: 20px;
+        }
+
+        .file-history h3 {
+            font-size: 14px;
+            color: var(--timeline-color-light); /* Mapped to timeline color for light mode */
+            margin-bottom: 10px;
+        }
+
+        .dark-mode .file-history h3 {
+            color: var(--body-text-dark); /* Unified with dark mode body text */
+        }
+
+        .file-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* --- .file-btn styles, mostly inheriting from .btn now --- */
+        .file-btn {
+            position: relative;
+            padding: 8px 25px 8px 12px;
+            border-radius: 3px;
+            font-size: 12px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            /* Inherit base styles from .btn */
+        }
+
+        /* Override only the initial background/border/color for general file buttons in light mode */
+        /* These do not follow the transparent button style in light mode, as per your previous code */
+        .file-btn {
+            background: var(--file-btn-default-bg-light);
+            border: 1px solid var(--file-btn-default-border-light);
+            color: var(--body-text-light); /* Specific color for light mode file buttons */
+            transition: var(--ani-button); /* Ensure transition is applied */
+        }
+        .file-btn:hover {
+            background: var(--file-btn-default-hover-bg-light);
+            border-color: var(--button-hover-border-light); /* Unified border hover */
+            color: var(--button-hover-color-light); /* Unified text hover */
+        }
+
+
+        /* Specific style for .file-btn.config in light mode */
+        .file-btn.config {
+            background: var(--file-btn-config-bg-light);
+        }
+
+        /* In dark mode, file buttons (including config) now fully match the unified .btn style */
+        .dark-mode .file-btn {
+            background: var(--button-background-dark);
+            border-color: var(--button-border-dark);
+            color: var(--button-color-dark);
+        }
+
+        .dark-mode .file-btn:hover {
+            background: var(--button-hover-background-dark);
+            border-color: var(--button-hover-border-dark);
+            color: var(--button-hover-color-dark);
+        }
+
+
+        .file-remove {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-red); /* Retains red for the 'remove' icon */
+            color: var(--white-200);
+            border: none;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--ani-button);
+        }
+
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: var(--modal-background-light);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 4px;
+            width: 300px;
+            max-width: 90%;
+            color: var(--modal-text-light);
+        }
+
+        .dark-mode .modal-content {
+            background: var(--modal-background-dark);
+            color: var(--modal-text-dark);
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid var(--modal-input-border-light);
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: var(--modal-input-background-light);
+            color: var(--modal-input-color-light);
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--modal-input-border-light);
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        .dark-mode .modal input {
+            background: var(--modal-input-background-dark);
+            border-color: var(--modal-input-border-dark);
+            color: var(--modal-input-color-dark);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            font-size: 10px;
+            color: var(--footer-color-light);
+            position: absolute;
+            bottom: 10px;
+            right: 60px;
+            transition: opacity 0.3s ease-in-out; /* Add transition for fade */
+        }
+
+        .dark-mode .footer {
+            color: var(--footer-color-dark);
+        }
+
+        /* --- Toast Notifications --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: var(--toast-background-default);
+            color: var(--toast-color-default);
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: slideIn 0.3s forwards, fadeOut 0.5s 4.5s forwards;
+            min-width: 250px;
+            max-width: 350px;
+            word-wrap: break-word;
+        }
+
+        .toast.warning {
+            background-color: var(--accent-warning);
+            color: var(--toast-warning-color-light);
+        }
+
+        .toast.success {
+            background-color: var(--accent-success);
+            color: var(--toast-success-color-light);
+        }
+
+        .toast.info {
+            background-color: var(--accent-info);
+            color: var(--toast-info-color-light);
+        }
+
+        .dark-mode .toast.warning {
+            background-color: var(--accent-warning-dark);
+            color: var(--toast-warning-color-dark);
+        }
+
+        .dark-mode .toast.success {
+            background-color: var(--accent-success-dark);
+            color: var(--toast-success-color-dark);
+        }
+
+        .dark-mode .toast.info {
+            background-color: var(--accent-info-dark);
+            color: var(--toast-info-color-dark);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Class to hide elements with a fade effect */
+        .hidden-element {
+            opacity: 0 !important;
+            pointer-events: none !important; /* Prevents interaction when hidden */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+    .help-text {
+        color: var(--grey-300);
+        text-decoration: none !important;
+        font-size: 12px ;
+        margin-left: 30px;
+    }
+    </style>
+</head>
+<body>
+<a href="https://petesteege.com/devlopment/wavepresenter" class="help-text" target="_blank">Help</a>
+    <div class="container">
+        <h1><span class="title-text">Wave Presenter</span>
+            <button class="theme-toggle" id="themeToggleButton">Dark</button>
+        </h1>
+
+        <div class="file-input">
+            <button class="btn" id="loadAudioButton">Load Audio</button>
+        </div>
+
+        <div id="toast-container"></div>
+        <div class="main-area">
+            <div class="dots-container" id="dots-container"></div>
+            <div id="waveform-container"></div>
+
+            <div class="timeline">
+                <span>00:00</span>
+                <span>00:30</span>
+                <span>01:00</span>
+                <span>01:30</span>
+                <span>02:00</span>
+            </div>
+
+            <div class="sections-label">Sections</div>
+            <div id="sections-bar"></div>
+        </div>
+
+        <div class="play-controls">
+            <button class="play-btn rewind" id="rewindButton">replay</button>
+            <button class="play-btn play" id="playButton">play_arrow</button>
+            <button class="play-btn pause" id="pauseButton">pause</button>
+            <button class="play-btn stop" id="stopButton">stop</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn play-btn focus-mode-toggle" id="focusModeButton">visibility_off</button>
+            <button class="btn" id="addSectionButton">Add New Section</button>
+            <button class="btn" id="saveProjectButton">Save Project (ZIP)</button>
+            <button class="btn" id="loadProjectButton">Load Project (ZIP)</button>
+        </div>
+
+        <div class="file-history">
+            <h3>Recent Projects</h3>
+            <div class="file-buttons" id="file-buttons"></div>
+        </div>
+
+        <input type="file" id="zipFileInput" accept=".zip" style="display: none;">
+    </div>
+
+    <div id="audioModal" class="modal">
+        <div class="modal-content">
+            <h3>Load Audio</h3>
+            <input type="file" id="audioFile" accept="audio/*" style="margin: 10px 0;">
+            <input type="url" id="audioUrl" placeholder="Or enter audio URL" style="width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box;">
+            <div class="modal-buttons">
+                <button class="btn" id="cancelAudioModalButton">Cancel</button>
+                <button class="btn" id="loadAudioFromModalButton">Load</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Section</h3>
+            <input type="text" id="editTitle" placeholder="Section Title">
+            <input type="text" id="editDescription" placeholder="Section Description">
+            <input type="color" id="editColor" class="color-picker" value="#FF6B6B">
+            <div class="modal-buttons">
+                <button class="btn" id="removeSectionButton">Remove</button>
+                <button class="btn" id="cancelEditModalButton">Cancel</button>
+                <button class="btn" id="saveEditButton">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">Wave Presenter v1.1. Copyright (c) Pete Steege Music, 2025. All rights reserved</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/7.8.6/wavesurfer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        let wavesurfer;
+        let sections = [];
+        let currentEditingSection = null;
+        let isDragging = false;
+        let dragSectionId = null;
+        let dragType = null;
+        let duration = 0;
+        let currentAudioFile = null; // Stores { name, url, file (Blob/File), isUrl }
+        let pendingSections = [];
+        let savedConfigs = []; // Re-added for recent projects
+
+        const colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#4D96FF', '#9B59B6'];
+        let colorIndex = 0;
+
+        function initWaveSurfer() {
+            const container = document.getElementById('waveform-container');
+            const containerHeight = container.offsetHeight; // This will now be 250px
+
+            wavesurfer = WaveSurfer.create({
+                container: '#waveform-container',
+                waveColor: 'var(--black-200)', /* Mapped */
+                progressColor: 'rgba(0,0,0,0.5)', /* Kept as RGBA for transparency */
+                cursorColor: 'navy', /* Kept as specific hex value */
+                barWidth: 5,
+                barGap: 3,
+                barRadius: 3,
+                responsive: false,
+                height: containerHeight,
+                normalize: true
+            });
+
+            wavesurfer.on('ready', () => {
+                duration = wavesurfer.getDuration();
+                updateTimeline();
+                if (pendingSections.length > 0) {
+                    sections = pendingSections;
+                    pendingSections = [];
+                    renderSections();
+                }
+            });
+
+            wavesurfer.on('error', (error) => {
+                console.error('WaveSurfer error:', error);
+                showToast('warning', `Error loading audio: ${error.message}`);
+            });
+        }
+
+        function rewindAudio() {
+            if (wavesurfer) {
+                wavesurfer.seekTo(0);
+            }
+        }
+
+        function playAudio() {
+            if (wavesurfer && wavesurfer.getDuration() > 0) {
+                wavesurfer.play();
+            } else {
+                showToast('info', 'No audio loaded to play.');
+            }
+        }
+
+        function pauseAudio() {
+            if (wavesurfer) {
+                wavesurfer.pause();
+            }
+        }
+
+        function stopAudio() {
+            if (wavesurfer) {
+                wavesurfer.stop();
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.getElementById('themeToggleButton'); // Changed to ID
+
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                button.textContent = 'Light';
+            } else {
+                button.textContent = 'Dark';
+            }
+
+            if (wavesurfer) {
+                const isDark = body.classList.contains('dark-mode');
+                wavesurfer.setOptions({
+                    waveColor: isDark ? 'rgba(255, 255, 255, 0.7)' : 'var(--black-200)',
+                    progressColor: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0,0,0,0.5)',
+                    cursorColor: isDark ? '#4D96FF' : 'navy'
+                });
+            }
+        }
+
+        function toggleFocusMode() {
+            // Elements to hide/show, excluding the main h1 wrapper, the focus mode button itself,
+            // and elements that should always be visible (waveform container, timeline).
+            const elementsToToggle = document.querySelectorAll(
+                '.file-input, .sections-label, #sections-bar, .controls > button:not(.focus-mode-toggle), .file-history, .footer, #waveform-container .section-overlay'
+                // Added '#waveform-container .section-overlay' here
+            );
+
+            const themeToggleButton = document.getElementById('themeToggleButton'); // Changed to ID
+            const focusModeButton = document.getElementById('focusModeButton'); // Changed to ID
+            const titleTextElement = document.querySelector('h1 .title-text'); // Target the span for the title text
+
+            // Defensive checks for critical elements
+            if (!themeToggleButton) {
+                console.error("Error: '#themeToggleButton' button not found. Focus mode cannot be toggled.");
+                return;
+            }
+            if (!focusModeButton) {
+                console.error("Error: '#focusModeButton' button not found. Focus mode cannot be toggled.");
+                return;
+            }
+
+            // Check if we are currently in focus mode (by checking the theme toggle's dimmed state)
+            const isInFocusMode = themeToggleButton.classList.contains('dimmed');
+
+            elementsToToggle.forEach(element => {
+                if (isInFocusMode) {
+                    // If currently in focus mode, show elements (remove hidden-element class)
+                    element.classList.remove('hidden-element');
+                } else {
+                    // If not in focus mode, hide elements (add hidden-element class)
+                    element.classList.add('hidden-element');
+                }
+            });
+
+            // Toggle dimming for the theme toggle button
+            themeToggleButton.classList.toggle('dimmed');
+            // Ensure theme toggle remains clickable even when dimmed
+            themeToggleButton.style.pointerEvents = 'auto'; // Always auto to be clickable
+
+
+            // Toggle hiding for the main title text (the "Wave Presenter" span)
+            if (titleTextElement) { // Ensure the element exists before trying to modify
+                if (isInFocusMode) {
+                    titleTextElement.classList.remove('hidden-element');
+                } else {
+                    titleTextElement.classList.add('hidden-element');
+                }
+            }
+
+
+            // Update the focus mode button icon
+            if (isInFocusMode) {
+                focusModeButton.textContent = 'visibility_off'; // Back to normal view
+            } else {
+                focusModeButton.textContent = 'visibility'; // Zen mode active
+            }
+        }
+
+        function showAudioModal() {
+            document.getElementById('audioModal').style.display = 'block';
+        }
+
+        function closeAudioModal() {
+            document.getElementById('audioModal').style.display = 'none';
+            document.getElementById('audioFile').value = '';
+            document.getElementById('audioUrl').value = '';
+        }
+
+        function loadAudioFromModal() {
+            const fileInput = document.getElementById('audioFile');
+            const urlInput = document.getElementById('audioUrl');
+
+            if (fileInput.files.length > 0) {
+                loadAudioFileFromInput();
+            } else if (urlInput.value.trim()) {
+                loadAudioFromUrl();
+            } else {
+                showToast('warning', 'Please select an audio file or enter a URL.');
+                return;
+            }
+            closeAudioModal();
+        }
+
+        function loadAudioFileFromInput() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            if (file) {
+                const blobUrl = URL.createObjectURL(file);
+                currentAudioFile = {
+                    name: file.name,
+                    file: file,
+                    url: blobUrl,
+                    isUrl: false
+                };
+                sections = [];
+                pendingSections = [];
+                wavesurfer.load(blobUrl);
+                // When loading new audio, update the H1 text
+                const titleTextSpan = document.querySelector('h1 .title-text');
+                if (titleTextSpan) {
+                    titleTextSpan.textContent = file.name.replace(/\.[^/.]+$/, "");
+                }
+                showToast('success', `Audio file "${file.name}" loaded.`);
+            }
+        }
+
+        async function loadAudioFromUrl() {
+            const urlInput = document.getElementById('audioUrl');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                return;
+            }
+
+            try {
+                showToast('info', 'Loading audio from URL...');
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok. Status: ${response.status} ${response.statusText}`);
+                }
+                const audioBlob = await response.blob();
+                const blobUrl = URL.createObjectURL(audioBlob);
+
+                const fileNameMatch = url.match(/\/([^\/?#]+)($|\?|#)/);
+                const fileName = fileNameMatch ? fileNameMatch[1] : 'audio_from_url.' + (audioBlob.type ? audioBlob.type.split('/')[1] : 'mp3');
+
+                currentAudioFile = {
+                    name: fileName,
+                    url: url,
+                    file: new File([audioBlob], fileName, { type: audioBlob.type }),
+                    isUrl: true
+                };
+
+                sections = [];
+                pendingSections = [];
+                wavesurfer.load(blobUrl);
+                // When loading new audio, update the H1 text
+                const titleTextSpan = document.querySelector('h1 .title-text');
+                if (titleTextSpan) {
+                    titleTextSpan.textContent = currentAudioFile.name.replace(/\.[^/.]+$/, "");
+                }
+                showToast('success', `Audio from URL loaded: "${fileName}".`);
+            } catch (error) {
+                console.error('Failed to load audio from URL:', error);
+                showToast('warning', `Failed to load audio from URL: ${error.message}. Please check the URL and your network.`);
+            }
+        }
+
+        function addSection() {
+            if (!duration || duration === 0) {
+                showToast('warning', 'Please load an audio file first to add sections.');
+                return;
+            }
+
+            const start = Math.random() * (duration - 10);
+            const end = Math.min(start + 10, duration);
+
+            sections.push({
+                id: Date.now(),
+                start: start,
+                end: end,
+                title: `Section ${String.fromCharCode(65 + sections.length)}`,
+                description: 'Description text',
+                color: colors[colorIndex % colors.length]
+            });
+
+            colorIndex++;
+            renderSections();
+            showToast('info', 'New section added.');
+        }
+
+        function removeSection() {
+            if (currentEditingSection) {
+                sections = sections.filter(section => section.id !== currentEditingSection);
+                renderSections();
+                closeModal();
+                showToast('info', 'Section removed.');
+            }
+        }
+
+        function renderSections() {
+            const sectionsBar = document.getElementById('sections-bar');
+            const dotsContainer = document.getElementById('dots-container');
+            const waveformContainer = document.getElementById('waveform-container'); // Get waveform container
+
+            sectionsBar.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            // Remove existing overlays before re-rendering
+            waveformContainer.querySelectorAll('.section-overlay').forEach(overlay => overlay.remove());
+
+
+            if (!duration) return;
+
+            sections.forEach(section => {
+                const startPercent = (section.start / duration) * 100;
+                const endPercent = (section.end / duration) * 100;
+                const width = endPercent - startPercent;
+
+                const block = document.createElement('div');
+                block.className = 'section-block';
+                block.style.left = `${startPercent}%`;
+                block.style.width = `${width}%`;
+                block.style.backgroundColor = section.color;
+
+                // --- SECURITY FIX: Use textContent instead of innerHTML for user-controlled data ---
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'section-title';
+                titleDiv.textContent = section.title; // SAFE
+                block.appendChild(titleDiv);
+
+                const descriptionDiv = document.createElement('div');
+                descriptionDiv.className = 'section-description';
+                descriptionDiv.textContent = section.description; // SAFE
+                block.appendChild(descriptionDiv);
+                // --- END SECURITY FIX ---
+
+                // Event listener attached via JS, not inline HTML attribute
+                block.addEventListener('click', () => editSection(section.id));
+                sectionsBar.appendChild(block);
+
+                const startDot = document.createElement('div');
+                startDot.className = 'section-dot';
+                startDot.style.left = `${startPercent}%`;
+                startDot.style.backgroundColor = section.color;
+                dotsContainer.appendChild(startDot);
+
+                const startLine = document.createElement('div');
+                startLine.className = 'section-line';
+                startLine.style.left = `${startPercent}%`;
+                dotsContainer.appendChild(startLine);
+
+                const endDot = document.createElement('div');
+                endDot.className = 'section-dot';
+                endDot.style.left = `${endPercent}%`;
+                endDot.style.backgroundColor = section.color;
+                dotsContainer.appendChild(endDot);
+
+                const endLine = document.createElement('div');
+                endLine.className = 'section-line';
+                endLine.style.left = `${endPercent}%`;
+                dotsContainer.appendChild(endLine);
+
+                // Add the transparent background overlay for the section
+                const sectionOverlay = document.createElement('div');
+                sectionOverlay.className = 'section-overlay';
+                sectionOverlay.style.left = `${startPercent}%`;
+                sectionOverlay.style.width = `${width}%`;
+                sectionOverlay.style.backgroundColor = section.color;
+                waveformContainer.appendChild(sectionOverlay);
+
+
+                const startHandle = document.createElement('div');
+                startHandle.className = 'handle';
+                startHandle.style.left = `${startPercent}%`;
+                startHandle.addEventListener('mousedown', (e) => startDrag(e, section.id, 'start'));
+                sectionsBar.appendChild(startHandle);
+
+                const endHandle = document.createElement('div');
+                endHandle.className = 'handle';
+                endHandle.style.left = `${endPercent}%`;
+                endHandle.addEventListener('mousedown', (e) => startDrag(e, section.id, 'end'));
+                sectionsBar.appendChild(endHandle);
+            });
+        }
+
+        function startDrag(e, sectionId, type) {
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            dragSectionId = sectionId;
+            dragType = type;
+
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function handleDrag(e) {
+            if (!isDragging) return;
+
+            const container = document.getElementById('sections-bar');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            const time = (percent / 100) * duration;
+
+            const section = sections.find(s => s.id === dragSectionId);
+            if (!section) return;
+
+            if (dragType === 'start') {
+                section.start = Math.max(0, Math.min(time, section.end - 0.1));
+            } else {
+                section.end = Math.min(duration, Math.max(time, section.start + 0.1));
+            }
+
+            renderSections();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            dragSectionId = null;
+            dragType = null;
+            document.removeEventListener('mousemove', handleDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function editSection(sectionId) {
+            const section = sections.find(s => s.id === sectionId);
+            if (!section) return;
+
+            currentEditingSection = sectionId;
+            document.getElementById('editTitle').value = section.title;
+            document.getElementById('editDescription').value = section.description;
+            document.getElementById('editColor').value = section.color;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function saveEdit() {
+            const section = sections.find(s => s.id === currentEditingSection);
+            if (!section) return;
+
+            section.title = document.getElementById('editTitle').value;
+            section.description = document.getElementById('editDescription').value;
+            section.color = document.getElementById('editColor').value;
+
+            renderSections();
+            closeModal();
+            showToast('success', 'Section updated successfully.');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditingSection = null;
+        }
+
+        function updateTimeline() {
+            const timeline = document.querySelector('.timeline');
+            timeline.innerHTML = '';
+
+            for (let i = 0; i < 5; i++) {
+                const time = (duration / 4) * i;
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timeline.innerHTML += `<span>${timeStr}</span>`;
+            }
+        }
+
+        // --- ZIP Project Save/Load ---
+
+        function saveConfig() {
+            if (!currentAudioFile || !currentAudioFile.file) {
+                showToast('warning', 'Please load an audio file first to save a project.');
+                return;
+            }
+
+            const projectName = prompt('Enter project name:', currentAudioFile.name.replace(/\.[^/.]+$/, "") + " Project");
+            if (!projectName) return;
+
+            saveProjectAsZip(projectName);
+        }
+
+        async function saveProjectAsZip(projectName) {
+            const zip = new JSZip();
+
+            const sectionsData = {
+                sections: sections,
+                audioFileName: currentAudioFile.name
+            };
+            zip.file("sections.json", JSON.stringify(sectionsData, null, 2));
+
+            if (currentAudioFile.file) {
+                zip.file(currentAudioFile.name, currentAudioFile.file);
+            } else {
+                showToast('warning', 'Audio file data missing for saving. Cannot create ZIP.');
+                return;
+            }
+
+            const generatedZipBlob = await zip.generateAsync({ type: "blob" });
+
+            const downloadFileName = `${projectName}.zip`;
+
+            const newZipFileObject = new File([generatedZipBlob], downloadFileName, { type: "application/zip" });
+
+            const existingIndex = savedConfigs.findIndex(cfg => cfg.name === projectName && cfg.zipFile.size === newZipFileObject.size);
+            if (existingIndex !== -1) {
+                savedConfigs.splice(existingIndex, 1);
+            }
+            savedConfigs.unshift({ name: projectName, zipFile: newZipFileObject });
+
+            if (savedConfigs.length > 10) {
+                savedConfigs.pop();
+            }
+            renderFileButtons();
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(generatedZipBlob);
+            a.download = downloadFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+
+            showToast('success', `Project "${projectName}" saved successfully!`);
+        }
+
+        async function processAndLoadZipFile(zipFile) {
+            const zip = new JSZip();
+            try {
+                const content = await zip.loadAsync(zipFile);
+
+                const sectionsJsonFile = content.file("sections.json");
+                if (!sectionsJsonFile) {
+                    throw new Error('Invalid project ZIP: missing sections.json.');
+                }
+                const sectionsJsonString = await sectionsJsonFile.async("string");
+                const loadedData = JSON.parse(sectionsJsonString);
+
+                let audioFileName = loadedData.audioFileName;
+                let audioFileInZip;
+
+                if (audioFileName) {
+                    audioFileInZip = content.file(audioFileName);
+                } else {
+                    const audioFiles = [];
+                    content.forEach((relativePath, zipEntry) => {
+                        if (!zipEntry.dir && (/\.(mp3|wav|ogg|m4a)$/i).test(relativePath)) {
+                            audioFiles.push(zipEntry);
+                        }
+                    });
+                    if (audioFiles.length === 1) {
+                        audioFileInZip = audioFiles[0];
+                        audioFileName = audioFiles[0].name;
+                    } else if (audioFiles.length === 0) {
+                        throw new Error('No audio file found in ZIP.');
+                    } else {
+                        throw new Error('Multiple audio files found in ZIP. Please ensure only one audio file is present.');
+                    }
+                }
+
+                if (!audioFileInZip) {
+                    throw new Error('Audio file not found in ZIP (even after attempting to find it).');
+                }
+
+                const audioBlob = await audioFileInZip.async("blob");
+                const blobUrl = URL.createObjectURL(audioBlob);
+
+                currentAudioFile = {
+                    name: audioFileName,
+                    file: new File([audioBlob], audioFileName, { type: audioBlob.type }),
+                    url: blobUrl,
+                    isUrl: false
+                };
+
+                wavesurfer.load(blobUrl);
+                // When loading new audio, update the H1 text
+                const titleTextSpan = document.querySelector('h1 .title-text');
+                if (titleTextSpan) {
+                    titleTextSpan.textContent = audioFileName.replace(/\.[^/.]+$/, "");
+                }
+
+                sections = loadedData.sections || [];
+                if (!wavesurfer.isReady) {
+                    pendingSections = sections;
+                } else {
+                    renderSections();
+                }
+                showToast('success', `Project "${zipFile.name.replace(/\.zip$/, '')}" loaded successfully!`);
+                return true;
+            } catch (error) {
+                console.error("Error processing ZIP file:", error);
+                showToast('warning', `Error loading project: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function loadProjectFromZip() {
+            const zipFileInput = document.getElementById('zipFileInput');
+            const zipFile = zipFileInput.files[0];
+
+            if (!zipFile) {
+                return;
+            }
+
+            try {
+                const success = await processAndLoadZipFile(zipFile);
+                if (success) {
+                    const projectName = zipFile.name.replace(/\.zip$/, '');
+                    const exists = savedConfigs.some(cfg => cfg.name === projectName && cfg.zipFile.size === zipFile.size); // Check name and size for uniqueness
+                    if (!exists) {
+                        savedConfigs.unshift({ name: projectName, zipFile: zipFile });
+                        if (savedConfigs.length > 10) {
+                            savedConfigs.pop();
+                        }
+                        renderFileButtons();
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading ZIP project:", error);
+            } finally {
+                zipFileInput.value = '';
+            }
+        }
+
+        function renderFileButtons() {
+            const container = document.getElementById('file-buttons');
+            container.innerHTML = '';
+
+            savedConfigs.forEach((config, index) => {
+                const button = document.createElement('div');
+                button.className = 'file-btn config';
+                button.textContent = config.name;
+                // Event listener attached via JS, not inline HTML attribute
+                button.addEventListener('click', () => loadSavedProjectFromRecent(config.zipFile));
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'file-remove';
+                removeBtn.textContent = '×';
+                // Event listener attached via JS, not inline HTML attribute
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeConfig(index);
+                });
+
+                button.appendChild(removeBtn);
+                container.appendChild(button);
+            });
+        }
+
+        async function loadSavedProjectFromRecent(zipFileObject) {
+            try {
+                // Ensure a valid File object is passed, as JSZip.loadAsync can handle Blob/File
+                if (!(zipFileObject instanceof File) && !(zipFileObject instanceof Blob)) {
+                    console.error("loadSavedProjectFromRecent: Invalid zipFileObject provided.", zipFileObject);
+                    showToast('warning', 'Invalid project file. Please try loading from file again.');
+                    return;
+                }
+                await processAndLoadZipFile(zipFileObject);
+            } catch (error) {
+                console.error("Error loading saved project from recents:", error);
+                showToast('warning', `Failed to load recent project: ${error.message}`);
+            }
+        }
+
+        function removeConfig(index) {
+            savedConfigs.splice(index, 1);
+            renderFileButtons();
+            showToast('info', 'Project removed from recent history.');
+        }
+
+        function showToast(type, message) {
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toastDiv = document.createElement('div');
+            toastDiv.className = `toast ${type}`;
+            toastDiv.textContent = message;
+            toastContainer.appendChild(toastDiv);
+
+            setTimeout(() => {
+                toastDiv.remove();
+            }, 5000);
+        }
+
+        window.addEventListener('load', () => {
+            initWaveSurfer();
+            renderFileButtons();
+
+            // --- Event Listeners for Buttons (replaces inline onclick attributes) ---
+            document.getElementById('themeToggleButton').addEventListener('click', toggleTheme);
+            document.getElementById('loadAudioButton').addEventListener('click', showAudioModal);
+            document.getElementById('rewindButton').addEventListener('click', rewindAudio);
+            document.getElementById('playButton').addEventListener('click', playAudio);
+            document.getElementById('pauseButton').addEventListener('click', pauseAudio);
+            document.getElementById('stopButton').addEventListener('click', stopAudio);
+            document.getElementById('focusModeButton').addEventListener('click', toggleFocusMode);
+            document.getElementById('addSectionButton').addEventListener('click', addSection);
+            document.getElementById('saveProjectButton').addEventListener('click', saveConfig);
+            document.getElementById('loadProjectButton').addEventListener('click', () => document.getElementById('zipFileInput').click());
+            document.getElementById('zipFileInput').addEventListener('change', loadProjectFromZip);
+
+            // Modal Buttons
+            document.getElementById('cancelAudioModalButton').addEventListener('click', closeAudioModal);
+            document.getElementById('loadAudioFromModalButton').addEventListener('click', loadAudioFromModal);
+            document.getElementById('removeSectionButton').addEventListener('click', removeSection);
+            document.getElementById('cancelEditModalButton').addEventListener('click', closeModal);
+            document.getElementById('saveEditButton').addEventListener('click', saveEdit);
+
+            // Global click handlers for modals (replaces old window.onclick)
+            document.getElementById('editModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('editModal')) {
+                    closeModal();
+                }
+            });
+            document.getElementById('audioModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('audioModal')) {
+                    closeAudioModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
